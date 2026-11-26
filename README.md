@@ -2,7 +2,7 @@
 
 # node2shell-lab
 
-**Reproducible lab and client for CVE-2026-111497 (Node2Shell) — an out-of-bounds write in the Brotli decoder bundled with Node.js, reachable through `Content-Encoding: br` request bodies, ending in worker hijack and command execution.**
+**Reproducible lab and client for CVE-2026-111497 (Node2Shell) an out-of-bounds write in the Brotli decoder bundled with Node.js, reachable through `Content-Encoding: br` request bodies, ending in worker hijack and command execution.**
 
 ![CWE-252](https://img.shields.io/badge/CWE-252-red)
 ![CWE-787](https://img.shields.io/badge/CWE-787-red)
