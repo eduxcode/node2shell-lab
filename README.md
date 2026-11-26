@@ -57,7 +57,7 @@ Between calls, the decoder keeps unconsumed bytes in an internal **8-byte**
 buffer. The invalid-format error never drains that buffer; more bytes keep
 arriving, and past the eighth byte the writes run off the end of it. The
 result is an out-of-bounds write relative to the ring buffer, with an
-attacker-controlled `int32` offset and a 16-byte attacker-controlled copy —
+attacker-controlled `int32` offset and a 16-byte attacker-controlled copy
 memory corruption that can lead to a crash, a memory leak, or remote code
 execution.
 
@@ -89,7 +89,7 @@ report invalid stream earlier"), which introduces
 | Bun | `< 1.4.4` | `1.4.4+` |
 
 Node.js cherry-picked the fix without bumping the `process.versions.brotli`
-string, so the *runtime* version — not the Brotli version string — is what
+string, so the *runtime* version not the Brotli version string — is what
 matters for Node.
 
 ## Attack surfaces
@@ -109,8 +109,8 @@ against an Express 5.3.0 + body-parser 2.4.0 application.
 ### 1. One error code, two meanings
 
 `DecodeBlockTypeAndLength()` returns the same `BROTLI_FALSE` whether it ran
-out of input bytes (recoverable — ask for more) or the stream declared an
-impossible block switch (unrecoverable — the stream is malformed). The
+out of input bytes (recoverable ask for more) or the stream declared an
+impossible block switch (unrecoverable the stream is malformed). The
 streaming wrapper around the decoder can't tell the two apart, so it always
 takes the recoverable path.
 
@@ -181,16 +181,16 @@ two-stage request:
           ▲ 127.0.0.1:3000 (target)         ▲ 127.0.0.1:3001 (patched)
 ```
 
-- **target** (`n2s-target`) — official Node.js **v24.22.0**, Express 5.3.0,
+- **target** (`n2s-target`) official Node.js **v24.22.0**, Express 5.3.0,
   body-parser 2.4.0, `UV_THREADPOOL_SIZE=1`, and a shell supervisor that
   restarts the process after every crash. Published on `127.0.0.1:3000`.
-- **patched** (`n2s-patched`) — the same application on Node.js
+- **patched** (`n2s-patched`) the same application on Node.js
   **v24.22.1**. Published on `127.0.0.1:3001`.
-- **attacker** (`n2s-attacker`) — Python 3.12, no third-party dependencies,
+- **attacker** (`n2s-attacker`) Python 3.12, no third-party dependencies,
   `network_mode: host` so it can reach the targets published on loopback.
 
 The pinned Node v24.22.0 binary has SHA-256
-`67ca5783febb8bf85736c79fcdd92c8d6d465a0eb2a082672bcdfa76a506751c` — the
+`67ca5783febb8bf85736c79fcdd92c8d6d465a0eb2a082672bcdfa76a506751c` the
 exact build the exploit's offsets and gadget addresses were calibrated for.
 v24.22.1 ships a different binary and rejects the stream with `-17`.
 
@@ -202,7 +202,7 @@ v24.22.1 ships a different binary and rejects the stream with `-17`.
 
 > The `attacker` container uses `network_mode: host` to reach
 > `127.0.0.1:3000/3001`. On Docker Desktop (macOS/Windows) that mode doesn't
-> share the host loopback — run the Python client directly on the host, or
+> share the host loopback run the Python client directly on the host, or
 > adjust the compose network, in that case.
 
 ## Quick start
@@ -290,12 +290,12 @@ command> exit
 ```
 
 This is the exact ROP chain proven by the reference profile
-(`dup2(accepted_socket_fd, 1)` + `execvp(path, NULL)`) — only `path` is no
+(`dup2(accepted_socket_fd, 1)` + `execvp(path, NULL)`) only `path` is no
 longer hardcoded to `/usr/bin/id`: every line you type at the prompt fires a
 fresh exploit round (with its own ASLR retry) using the command you chose.
 The real limitation of the primitive is that `execvp` is called with no
 `argv`, so it only works with binaries that need no arguments (`id`,
-`whoami`, `uname`, `hostname`, `pwd`, `date`, ...) — something like
+`whoami`, `uname`, `hostname`, `pwd`, `date`, ...) something like
 `cat /etc/passwd` is not reachable this way.
 
 ### `--mode id`
@@ -389,7 +389,7 @@ proven ROP chain to `dup2` the hijacked socket onto stdin, stdout **and**
 stderr before `execvp("/bin/sh", NULL)` (the code is still there, behind
 `--mode shell`). **It was tested against the real target in this repository
 and confirmed broken**: the worker segfaults on every single attempt instead
-of completing the pivot — not a normal ASLR-dependent miss, but a structural
+of completing the pivot not a normal ASLR-dependent miss, but a structural
 one, most likely because the longer chain needs more attacker-controlled
 bytes than the proven 1031-byte prefix has room for, and simply growing that
 buffer (`shell_prefix_size`) does not land cleanly without real
@@ -458,13 +458,10 @@ node2shell-lab/
 
 - [Node.js — October 2026 Security Releases](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases)
 - [NVD — CVE-2026-111497](https://nvd.nist.gov/vuln/detail/CVE-2026-111497)
-- [Google Brotli — commit 0ed4268a](https://github.com/google/brotli/commit/0ed4268a)
-- [ELLIO — Node2Shell: RCE on stock Node.js builds](https://ellio.tech/en/blog/node2shell-cve-2026-111497-rce-on-stock-nodejs-builds/)
-- [Imperva — Node2Shell: From Brotli Data to RCE](https://www.imperva.com/blog/node2shell-from-brotli-data-to-remote-code-execution/)
 - [Arkango/CVE-2026-111497](https://github.com/Arkango/CVE-2026-111497) — MIT
   stream generator vendored into `exploit/trigger/brotli_stream.py`.
 - [dimasma0305/CVE-2026-111497-POC](https://github.com/dimasma0305/CVE-2026-111497-POC)
-  — public profile with the offsets/gadgets and calibrated position used as
+  public profile with the offsets/gadgets and calibrated position used as
   factual reference. This lab's client was reimplemented independently; no
   file from that repository is included.
 - [EQSTLab/CVE-2026-111497](https://github.com/EQSTLab/CVE-2026-111497) —
