@@ -1,0 +1,58 @@
+name: node2shell-lab
+
+services:
+  target:
+    build:
+      context: ./target
+      args:
+        NODE_IMAGE: node:24.22.0-bookworm-slim
+    image: node2shell-target:local
+    container_name: n2s-target
+    environment:
+      UV_THREADPOOL_SIZE: "1"
+    # Restart supervisor: the exploit needs a fresh process after each missed
+    # ASLR guess. The container stays up; node is restarted by this loop.
+    command:
+      - sh
+      - -c
+      - "while true; do node /app/server.js; sleep 0.1; done"
+    ports:
+      - "127.0.0.1:3000:3000"
+    restart: unless-stopped
+    networks:
+      - labnet
+
+  patched:
+    build:
+      context: ./target
+      args:
+        NODE_IMAGE: node:24.22.1-bookworm-slim
+    image: node2shell-patched:local
+    container_name: n2s-patched
+    environment:
+      UV_THREADPOOL_SIZE: "1"
+    command: ["node", "/app/server.js"]
+    ports:
+      - "127.0.0.1:3001:3000"
+    restart: unless-stopped
+    networks:
+      - labnet
+
+  attacker:
+    image: python:3.12-slim
+    container_name: n2s-attacker
+    working_dir: /exploit
+    volumes:
+      - ./exploit:/exploit:ro
+    # Host networking keeps the upstream loopback-only guard intact and lets
+    # the client reach 127.0.0.1:3000/3001 published by the targets.
+    network_mode: host
+    command: ["sleep", "infinity"]
+    tty: true
+    depends_on:
+      - target
+      - patched
+
+networks:
+  labnet:
+    driver: bridge

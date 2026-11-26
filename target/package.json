@@ -1,0 +1,10 @@
+{
+  "name": "node2shell-target",
+  "private": true,
+  "version": "1.0.0",
+  "description": "CVE-2026-111497 lab target (Express 5 + body-parser Brotli body inflation)",
+  "dependencies": {
+    "body-parser": "2.4.0",
+    "express": "5.3.0"
+  }
+}
